@@ -8,18 +8,23 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+
+	//search "GoPractice/search"
 )
 
 func main() {
 
 	//grab the file name from the commandline args
+	
 	parentFile, err := os.Open(os.Args[1])
 	if err != nil {
-		log.Fatal(err)
+		panic("Bundle is missing as first argument: ")
 	}
 	defer parentFile.Close()
 	childDir := extractInitalBundle(parentFile)
 	extractChildBundles(childDir)
+	//search.Demo()
+
 }
 
 //takes a file and sets up a tar/gzip reader then untars and creates a directory with the child tars
@@ -58,6 +63,7 @@ func extractInitalBundle(tarBundle *os.File) string {
 
 func extractChildBundles(childDir string) {
 	var files []string
+	var removedSuffixName = ""
 	os.Mkdir("unzippedbundles", 0755)
 	err := filepath.Walk(childDir, func(path string, info os.FileInfo, err error) error {
 		files = append(files, path)
@@ -95,10 +101,16 @@ func extractChildBundles(childDir string) {
 			if err != nil {
 				log.Fatal(err)
 			}
-
 			var newFileName = "unzipped" + file
-			newFileName = strings.TrimSuffix(strings.TrimSuffix(newFileName, ".gz"), ".tar")
-			var removedSuffixName = newFileName + "-" + hdr.Name
+
+			if strings.Contains(file, "gz") {
+				newFileName = strings.TrimSuffix(strings.TrimSuffix(newFileName, ".gz"), ".tar")
+				removedSuffixName = newFileName + "-" + hdr.Name
+			}
+			if strings.Contains(removedSuffixName, "/") {
+				removedSuffixName = strings.Replace(removedSuffixName, "/", "", -1)
+			}
+
 			f, err := os.Create(removedSuffixName)
 			if _, err := io.Copy(f, tarReader); err != nil {
 
