@@ -8,6 +8,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"github.com/doll94av/bundles-o-fun/search"
 )
 
 func main() {
@@ -20,6 +21,8 @@ func main() {
 	defer parentFile.Close()
 	childDir := extractInitalBundle(parentFile)
 	extractChildBundles(childDir)
+	search.SearchDirectory()
+
 }
 
 //takes a file and sets up a tar/gzip reader then untars and creates a directory with the child tars
@@ -99,11 +102,13 @@ func extractChildBundles(childDir string) {
 			var newFileName = "unzipped" + file
 			newFileName = strings.TrimSuffix(strings.TrimSuffix(newFileName, ".gz"), ".tar")
 			var removedSuffixName = newFileName + "-" + hdr.Name
+			if strings.Contains(removedSuffixName, "/") {
+				removedSuffixName = strings.Replace(removedSuffixName, "/", "", -1)
+			}
 			f, err := os.Create(removedSuffixName)
 			if _, err := io.Copy(f, tarReader); err != nil {
 
 			}
-
 		}
 	}
 }
