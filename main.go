@@ -14,9 +14,10 @@ import (
 func main() {
 
 	//grab the file name from the commandline args
+	
 	parentFile, err := os.Open(os.Args[1])
 	if err != nil {
-		log.Fatal(err)
+		panic("Bundle is missing as first argument: ")
 	}
 	defer parentFile.Close()
 	childDir := extractInitalBundle(parentFile)
@@ -61,6 +62,7 @@ func extractInitalBundle(tarBundle *os.File) string {
 
 func extractChildBundles(childDir string) {
 	var files []string
+	var removedSuffixName = ""
 	os.Mkdir("unzippedbundles", 0755)
 	err := filepath.Walk(childDir, func(path string, info os.FileInfo, err error) error {
 		files = append(files, path)
@@ -98,7 +100,6 @@ func extractChildBundles(childDir string) {
 			if err != nil {
 				log.Fatal(err)
 			}
-
 			var newFileName = "unzipped" + file
 			newFileName = strings.TrimSuffix(strings.TrimSuffix(newFileName, ".gz"), ".tar")
 			var removedSuffixName = newFileName + "-" + hdr.Name
